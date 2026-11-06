@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TrustVault - Upload Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            padding: 50px;
+        }
+        .container {
+            background: white;
+            max-width: 450px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px #ccc;
+        }
+        h2 {
+            color: #1e40af;
+            text-align: center;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload Document</h2>
+
+        <form action="/upload" method="POST"
+              enctype="multipart/form-data">
+
+            <label>Select Document</label>
+            <input type="file" name="document"
+                   accept=".pdf,.txt,.png,.jpg,.jpeg"
+                   required>
+
+            <label>Document Category</label>
+            <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="Academic">Academic</option>
+                <option value="Personal">Personal</option>
+                <option value="Official">Official</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button type="submit">Upload Document</button>
+        </form>
+    </div>
+</body>
+</html>

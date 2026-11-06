@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustVault | Audit Trail</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 25px;
+            color: #1e293b;
+        }
+
+        header {
+            background: linear-gradient(120deg, #172554, #2563eb);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        header p {
+            margin-bottom: 0;
+            color: #dbeafe;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-actions a,
+        .header-actions button {
+            background: white;
+            color: #1e40af;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-top: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.06);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #172554;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            border-radius: 9px;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 27px;
+            color: #1d4ed8;
+        }
+
+        .stat-card p {
+            margin-bottom: 0;
+            color: #475569;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .filters input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filters select {
+            min-width: 190px;
+            background: white;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .action {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>TrustVault Audit Trail</h1>
+        <p>Welcome, {{ username }} | Security Activity Monitoring</p>
+    </div>
+
+    <div class="header-actions">
+        <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+</header>
+
+<div class="section">
+    <h2>Document Activity History</h2>
+    <p class="subtitle">
+        Monitor document operations, account access and security events.
+    </p>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3 id="totalCount">{{ logs|length }}</h3>
+            <p>Total Activity Records</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="loginCount">0</h3>
+            <p>Login Events</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="documentCount">0</h3>
+            <p>Document Events</p>
+        </div>
+    </div>
+
+    <div class="filters">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search username, action or details..."
+            oninput="filterLogs()"
+        >
+
+        <select id="actionFilter" onchange="filterLogs()">
+            <option value="">All Activity Types</option>
+            <option value="USER_LOGIN">Successful Login</option>
+            <option value="LOGIN_FAILED">Failed Login</option>
+            <option value="DOCUMENT_DOWNLOADED">Document Downloaded</option>
+            <option value="DOCUMENT_SHARED">Document Shared</option>
+            <option value="DOCUMENT_ACCESS_REVOKED">Access Revoked</option>
+            <option value="DOCUMENT_REPLACED">Document Replaced</option>
+        </select>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="auditTable">
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>User</th>
+                    <th>Activity</th>
+                    <th>Document ID</th>
+                    <th>Details</th>
+                    <th>Date &amp; Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.username }}</td>
+                    <td><span class="action">{{ log.action }}</span></td>
+                    <td>{{ log.document_id if log.document_id else '-' }}</td>
+                    <td>{{ log.details or '-' }}</td>
+                    <td>{{ log['created_at'] or '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty">No activity recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p id="noResults" class="empty" style="display:none;">
+        No matching activity found.
+    </p>
+</div>
+
+<div class="footer">
+    TrustVault | Secure Document Sharing with a Real Audit Trail
+</div>
+
+<script>
+    const rows = Array.from(
+        document.querySelectorAll("#auditTable tbody tr")
+    ).filter(row => row.cells.length === 6);
+
+    document.getElementById("loginCount").textContent =
+        rows.filter(row =>
+            ["USER_LOGIN", "LOGIN_FAILED"].includes(
+                row.cells[2].innerText.trim()
+            )
+        ).length;
+
+    document.getElementById("documentCount").textContent =
+        rows.filter(row =>
+            row.cells[2].innerText.trim().startsWith("DOCUMENT_")
+        ).length;
+
+    function filterLogs() {
+        const search = document.getElementById("searchInput")
+            .value.toLowerCase();
+
+        const action = document.getElementById("actionFilter").value;
+        let visible = 0;
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowAction = row.cells[2].innerText.trim();
+
+            const matchesSearch = text.includes(search);
+            const matchesAction = !action || rowAction === action;
+
+            const show = matchesSearch && matchesAction;
+            row.style.display = show ? "" : "none";
+
+            if (show) visible++;
+        });
+
+        document.getElementById("noResults").style.display =
+            visible === 0 ? "block" : "none";
+    }
+</script>
+
+</body>
+</html>

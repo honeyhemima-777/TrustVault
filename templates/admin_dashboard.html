@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TrustVault Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            padding: 25px;
+            color: #1f2937;
+        }
+
+        header {
+            background: #1e40af;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .card, .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px #ddd;
+        }
+
+        .card h2 {
+            color: #1e40af;
+            font-size: 30px;
+            margin: 10px 0;
+        }
+
+        h3 {
+            color: #1e40af;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #dbeafe;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        button {
+            background: white;
+            color: #1e40af;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 700px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>TrustVault Admin Panel</h1>
+        <p>Welcome, {{ username }}</p>
+    </div>
+
+    <form method="POST" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+</header>
+</header>
+
+<div style="margin: 20px 0;">
+    <a href="{{ url_for('audit_logs') }}"
+        style="display: inline-block; background: #1e40af; color: white;
+            padding: 12px 20px; border-radius: 6px;
+            text-decoration: none; font-weight: bold;">
+        View Audit Logs
+    </a>
+</div>
+
+<div class="cards">
+
+<div class="cards">
+    <div class="card">
+        <h3>Total Users</h3>
+        <h2>{{ total_users }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Total Documents</h3>
+        <h2>{{ total_documents }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Total Shares</h3>
+        <h2>{{ total_shares }}</h2>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Registered Users</h3>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.role }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="section">
+    <h3>All Uploaded Documents</h3>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>File Name</th>
+            <th>Owner</th>
+            <th>Category</th>
+            <th>Uploaded Date</th>
+        </tr>
+        {% for doc in documents %}
+        <tr>
+            <td>{{ doc.id }}</td>
+            <td>{{ doc.original_name }}</td>
+            <td>{{ doc.owner_name }}</td>
+            <td>{{ doc.category }}</td>
+            <td>{{ doc.uploaded_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="section">
+    <h3>Document Sharing Monitor</h3>
+    <table>
+        <tr>
+            <th>Document</th>
+            <th>Owner</th>
+            <th>Shared With</th>
+            <th>Permission</th>
+            <th>Shared Date</th>
+        </tr>
+        {% for share in shares %}
+        <tr>
+            <td>{{ share.original_name }}</td>
+            <td>{{ share.owner_name }}</td>
+            <td>{{ share.shared_with }}</td>
+            <td>{{ share.permission }}</td>
+            <td>{{ share.granted_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>

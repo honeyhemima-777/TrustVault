@@ -1,0 +1,11 @@
+
+private_uploads/
+trustvault.db
+*.db
+.env
+__pycache__/
+.venv/
+
+*.log
+app_backup_before_cleanup.py
+replacement_test.txt

@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shared Documents - TrustVault</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #243b64;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #243b64;
+            color: white;
+        }
+
+        .download-btn {
+            background: #243b64;
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .replace-form {
+            margin-top: 8px;
+        }
+
+        .replace-form input {
+            max-width: 170px;
+            margin-bottom: 8px;
+        }
+
+        .replace-btn {
+            background: #16834a;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .replace-btn:hover {
+            background: #106638;
+        }
+
+        .permission {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>TrustVault</h1>
+    <h2>Documents Shared With Me</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Owner</th>
+                <th>Category</th>
+                <th>Permission</th>
+                <th>Shared Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+
+                <td>{{ doc["original_name"] }}</td>
+
+                <td>{{ doc["owner_name"] }}</td>
+
+                <td>{{ doc["category"] }}</td>
+
+                <td class="permission">
+                    {{ doc["permission"]|upper }}
+                </td>
+
+                <td>{{ doc["granted_at"] }}</td>
+
+                <td>
+
+                    {% if doc["permission"] in ("read", "edit") %}
+
+                    <a class="download-btn"
+                    href="{{ url_for('download_document',
+                    document_id=doc['id']) }}">
+                        Download
+                    </a>
+
+                    {% endif %}
+
+                    {% if doc["permission"] == "edit" %}
+
+                    <form class="replace-form"
+                        action="{{ url_for('replace_document',
+                        document_id=doc['id']) }}"
+                        method="POST"
+                        enctype="multipart/form-data">
+
+                        <input type="file"
+                            name="document"
+                            required>
+
+                        <br>
+
+                        <button type="submit"
+                                class="replace-btn">
+                            Replace Document
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+
+                </td>
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="6">
+                    No documents have been shared with you.
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

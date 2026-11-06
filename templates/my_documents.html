@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Documents - TrustVault</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #243b64;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #243b64;
+            color: white;
+        }
+        .download-btn, .share-btn, .replace-btn {
+            background: #243b64;
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .replace-btn {
+            background: #147d64;
+        }
+        input, select {
+            padding: 7px;
+            margin: 4px 0;
+            width: 120px;
+        }
+        .share-form, .replace-form {
+            min-width: 160px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TrustVault</h1>
+        <h2>My Uploaded Documents</h2>
+        <p style="color:red;">TRUSTVAULT TEMPLATE UPDATED</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Document ID</th>
+                    <th>File Name</th>
+                    <th>Category</th>
+                    <th>Uploaded Date</th>
+                    <th>Download</th>
+                    <th>Share Document</th>
+                    <th>Replace Document</th>
+                    <th>Manage Access</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td>{{ doc["id"] }}</td>
+                    <td>{{ doc["original_name"] }}</td>
+                    <td>{{ doc["category"] }}</td>
+                    <td>{{ doc["uploaded_at"] }}</td>
+
+                    <td>
+                        <a class="download-btn"
+                        href="{{ url_for('download_document', document_id=doc['id']) }}">
+                            Download
+                        </a>
+                    </td>
+
+                    <td>
+                        <form class="share-form"
+                            method="POST"
+                            action="{{ url_for('share_document', document_id=doc['id']) }}">
+
+                            <input type="text"
+                                name="username"
+                                placeholder="Username"
+                                required>
+
+                            <select name="permission" required>
+                                <option value="read">Read</option>
+                                <option value="edit">Edit</option>
+                            </select>
+
+                            <button class="share-btn" type="submit">
+                                Share
+                            </button>
+                        </form>
+                    </td>
+
+                    <td>
+                        <form class="replace-form"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            action="{{ url_for('replace_document', document_id=doc['id']) }}">
+
+                            <input type="file"
+                                name="document"
+                                accept=".pdf,.txt,.png,.jpg,.jpeg"
+                                required>
+
+                            <button class="replace-btn" type="submit">
+                                Replace
+                            </button>
+                    </form>
+                                        <td>
+                        {% set doc_shares = shares | selectattr("document_id", "equalto", doc["id"]) | list %}
+
+                        {% if doc_shares %}
+                            {% for share in doc_shares %}
+                                <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <strong>{{ share["shared_with"] }}</strong><br>
+                                    Permission: {{ share["permission"]|upper }}<br>
+                                    Shared Date: {{ share["granted_at"] }}<br>
+
+                                    <form method="POST"
+                                        action="{{ url_for('revoke_share', document_id=doc['id'], user_id=share['shared_user_id']) }}"
+                                        onsubmit="return confirm('Are you sure you want to revoke this user access?');">
+
+                                        <button type="submit"
+                                            style="background:#c0392b; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer;">
+                                            Revoke Access
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <span>No shared users</span>
+                        {% endif %}
+                    </td>
+                {% else %}
+                <tr>
+                    <td colspan="8">No documents uploaded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
