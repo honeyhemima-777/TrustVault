@@ -175,12 +175,10 @@ def dashboard():
         session.clear()
         return redirect(url_for("login"))
 
-    return f"""
-        <h1>Welcome to TrustVault!</h1>
-        <h2>Hello, {user['username']}</h2>
-        <p>Your role: {user['role']}</p>
-        <a href="/logout">Logout</a>
-    """
+    return render_template(
+        "dashboard.html",
+        username=user["username"]
+)
 
 @app.route("/logout", methods=["POST"])
 def logout():

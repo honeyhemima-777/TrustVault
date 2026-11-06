@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustVault | Owner Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #172e55;
+            color: white;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 27px;
+        }
+
+        header span {
+            color: #a9c8ff;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 45px auto;
+            padding: 0 22px;
+        }
+
+        .welcome {
+            margin-bottom: 30px;
+        }
+
+        .welcome h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .role {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 7px 14px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 22px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card .symbol {
+            font-size: 32px;
+            margin-bottom: 18px;
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 19px;
+        }
+
+        .card p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 45px;
+            margin-bottom: 22px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #244477;
+            color: white;
+            padding: 11px 17px;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #172e55;
+        }
+
+        .logout {
+            background: #dc3545;
+        }
+
+        .logout:hover {
+            background: #b91c1c;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 30px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 18px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🔐 Trust<span>Vault</span></h1>
+    <form action="/logout" method="POST">
+        <button class="btn logout" type="submit">Logout</button>
+    </form>
+</header>
+
+<div class="container">
+
+    <section class="welcome">
+        <h2>Welcome, {{ username }}!</h2>
+        <p>Your secure workspace for managing, sharing and protecting documents.</p>
+        <span class="role">OWNER ACCOUNT</span>
+    </section>
+
+    <section class="cards">
+
+        <div class="card">
+            <div class="symbol">📤</div>
+            <h3>Upload Document</h3>
+            <p>Securely upload your documents to your private vault.</p>
+            <a href="/upload" class="btn">Upload Now</a>
+        </div>
+
+        <div class="card">
+            <div class="symbol">📁</div>
+            <h3>My Documents</h3>
+            <p>View, download, replace and manage your uploaded files.</p>
+            <a href="/my-documents" class="btn">View Documents</a>
+        </div>
+
+        <div class="card">
+            <div class="symbol">🤝</div>
+            <h3>Shared Documents</h3>
+            <p>Access documents that other users have shared with you.</p>
+            <a href="/shared-documents" class="btn">View Shared Files</a>
+        </div>
+
+    </section>
+</div>
+
+<footer>
+    © 2026 TrustVault | Secure Document Sharing & Audit Trail
+</footer>
+
+</body>
+</html>

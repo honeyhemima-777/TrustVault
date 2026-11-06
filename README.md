@@ -142,19 +142,21 @@ TrustVault\_Project/
 
 │   ├── login.html
 
-│   ├── admin\_dashboard.html
+│   ├── admin_dashboard.html
 
-│   ├── audit\_logs.html
+│   ├── audit_logs.html
 
-│   ├── my\_documents.html
+│   ├── my_documents.html
 
-│   ├── shared\_documents.html
+│   ├── shared_documents.html
+
+    ├── dashboard.html
 
 │   └── upload.html
 
 │
 
-└── private\_uploads/
+└── private_uploads/
 
 `
 
@@ -184,9 +186,8 @@ The SQLite database and private uploaded files are created locally and excluded 
 
 `bash
 
-git clone YOUR\_GITHUB\_REPOSITORY\_URL
-
-cd TrustVault\_Project
+git clone https://github.com/honeyhemima-777/TrustVault.git
+cd TrustVault
 
 `
 
@@ -214,7 +215,7 @@ python -m pip install -r requirements.txt
 
 `powershell
 
-$env:TRUSTVAULT\_SECRET\_KEY = "replace-with-a-long-random-secret"
+$env:TRUSTVAULT_SECRET_KEY = "replace-with-a-long-random-secret"
 
 `
 
