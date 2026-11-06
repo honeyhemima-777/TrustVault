@@ -699,6 +699,7 @@ def revoke_share(document_id, user_id):
         )
 
     return redirect(url_for("my_documents"))
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(host="127.0.0.1", port=5002, debug=False)
