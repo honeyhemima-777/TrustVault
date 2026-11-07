@@ -26,6 +26,22 @@ def get_db():
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
+
+
+def viewer_access_verified(user_id, db):
+    access = db.execute("""
+        SELECT updated_at
+        FROM viewer_access
+        WHERE user_id = ?
+    """, (user_id,)).fetchone()
+
+    if access is None:
+        return False
+
+    return (
+        session.get("viewer_access_user_id") == user_id
+        and session.get("viewer_access_updated_at") == access["updated_at"]
+    )
 def log_activity(user_id, username, action, document_id=None, details=None, db=None):
     query = """
         INSERT INTO audit_logs
@@ -52,7 +68,17 @@ def init_db():
                     CHECK(role IN ('admin', 'owner', 'viewer'))
             )
         """)
-
+ # One password for each viewer
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS viewer_access (
+                user_id INTEGER PRIMARY KEY,
+                password_hash TEXT NOT NULL,
+                updated_by INTEGER NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (updated_by) REFERENCES users(id)
+            )
+        """)
         # Create documents table
         db.execute("""
             CREATE TABLE IF NOT EXISTS documents (
@@ -367,6 +393,14 @@ def replace_document(document_id):
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
+    with get_db() as db:
+        user = db.execute("""
+            SELECT role FROM users WHERE id = ?
+    """, (user_id,)).fetchone()
+
+    if user and user["role"] == "viewer":
+        if not viewer_access_verified(user_id, db):
+            return redirect(url_for("verify_viewer_access"))
     new_file = request.files.get("document")
 
     if not new_file or not new_file.filename:
@@ -504,7 +538,56 @@ def my_documents():
         documents=documents,
         shares=shares
     )
+@app.route("/verify-viewer-access", methods=["GET", "POST"])
+def verify_viewer_access():
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    with get_db() as db:
+
+        user = db.execute("""
+            SELECT id, username, role
+            FROM users
+            WHERE id = ?
+        """, (user_id,)).fetchone()
+
+        if user is None or user["role"] != "viewer":
+            abort(403)
+
+        access = db.execute("""
+            SELECT password_hash, updated_at
+            FROM viewer_access
+            WHERE user_id = ?
+        """, (user_id,)).fetchone()
+
+        if access is None:
+            return render_template(
+                "verify_access.html",
+                error="Your owner has not set an access password yet. Please contact them."
+            )
+
+        if request.method == "POST":
+
+            access_password = request.form.get("access_password", "")
+
+            if check_password_hash(
+                access["password_hash"],
+                access_password
+            ):
+                session["viewer_access_user_id"] = user_id
+                session["viewer_access_updated_at"] = access["updated_at"]
+
+                return redirect(url_for("shared_documents"))
+
+            return render_template(
+                "verify_access.html",
+                error="Incorrect password. Please try again."
+            )
+
+    return render_template("verify_access.html", error=None)
 @app.route("/shared-documents")
 def shared_documents():
     if "user_id" not in session:
@@ -513,6 +596,15 @@ def shared_documents():
     user_id = session["user_id"]
 
     with get_db() as db:
+
+        user = db.execute("""
+            SELECT role FROM users WHERE id = ?
+        """, (user_id,)).fetchone()
+
+        if user and user["role"] == "viewer":
+            if not viewer_access_verified(user_id, db):
+                return redirect(url_for("verify_viewer_access"))
+
         documents = db.execute("""
             SELECT
                 d.id,
@@ -527,14 +619,15 @@ def shared_documents():
             WHERE p.user_id = ?
             ORDER BY p.granted_at DESC
         """, (user_id,)).fetchall()
+
         print("TRUSTVAULT DEBUG ROUTE REACHED", flush=True)
+
     print("DEBUG - Shared documents:", [dict(doc) for doc in documents])
 
     return render_template(
         "shared_documents.html",
         documents=documents
     )
-
 @app.route("/download/<int:document_id>")
 def download_document(document_id):
     if "user_id" not in session:
@@ -543,6 +636,15 @@ def download_document(document_id):
     user_id = session["user_id"]
 
     with get_db() as db:
+
+        user = db.execute("""
+            SELECT role FROM users WHERE id = ?
+        """, (user_id,)).fetchone()
+
+        if user and user["role"] == "viewer":
+            if not viewer_access_verified(user_id, db):
+                return redirect(url_for("verify_viewer_access"))
+
         document = db.execute("""
             SELECT
                 d.id,
@@ -569,27 +671,28 @@ def download_document(document_id):
 
     if not file_path.is_file():
         abort(404)
+
     with get_db() as db:
         user = db.execute(
             "SELECT username FROM users WHERE id = ?",
             (user_id,)
         ).fetchone()
 
-    if user:
-        log_activity(
-            user_id,
-            user["username"],
-            "DOCUMENT_DOWNLOADED",
-            document_id,
-            f"Downloaded {document['original_name']}"
-        )
+        if user:
+            log_activity(
+                user_id,
+                user["username"],
+                "DOCUMENT_DOWNLOADED",
+                document_id,
+                f"Downloaded {document['original_name']}",
+                db=db
+            )
 
     return send_file(
         str(file_path),
         as_attachment=True,
         download_name=document["original_name"]
     )
-
 
 @app.route("/share/<int:document_id>", methods=["POST"])
 def share_document(document_id):
@@ -652,6 +755,74 @@ def share_document(document_id):
             f"Shared with {username} using {permission.upper()} permission",
             db=db
         )
+    return redirect(url_for("my_documents"))
+@app.route("/set-viewer-password/<int:user_id>", methods=["POST"])
+def set_viewer_password(user_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    owner_id = session["user_id"]
+    print("DEBUG OWNER SESSION:", owner_id, flush=True)
+    access_password = request.form.get("access_password", "")
+
+    if len(access_password) < 8:
+        return "Password must contain at least 8 characters.", 400
+
+    with get_db() as db:
+
+        owner = db.execute("""
+            SELECT id, username, role
+            FROM users
+            WHERE id = ?
+        """, (owner_id,)).fetchone()
+
+        viewer = db.execute("""
+            SELECT id, username, role
+            FROM users
+            WHERE id = ?
+        """, (user_id,)).fetchone()
+
+        if owner is None or owner["role"] != "owner":
+            abort(403)
+
+        if viewer is None or viewer["role"] != "viewer":
+            abort(404)
+
+        # Verify that this owner has shared at least one document
+        # with this viewer.
+        existing_share = db.execute("""
+            SELECT 1
+            FROM document_permissions p
+            JOIN documents d ON d.id = p.document_id
+            WHERE d.owner_id = ? AND p.user_id = ?
+            LIMIT 1
+        """, (owner_id, user_id)).fetchone()
+
+        if existing_share is None:
+            abort(403)
+
+        password_hash = generate_password_hash(access_password)
+
+        db.execute("""
+            INSERT INTO viewer_access
+                (user_id, password_hash, updated_by)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id)
+            DO UPDATE SET
+                password_hash = excluded.password_hash,
+                updated_by = excluded.updated_by,
+                updated_at = CURRENT_TIMESTAMP
+        """, (user_id, password_hash, owner_id))
+
+        log_activity(
+            owner_id,
+            owner["username"],
+            "VIEWER_PASSWORD_UPDATED",
+            details=f"Updated access password for viewer {viewer['username']}",
+            db=db
+        )
+
     return redirect(url_for("my_documents"))
 @app.route("/revoke-share/<int:document_id>/<int:user_id>", methods=["POST"])
 def revoke_share(document_id, user_id):

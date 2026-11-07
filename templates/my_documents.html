@@ -122,43 +122,57 @@
                                 name="document"
                                 accept=".pdf,.txt,.png,.jpg,.jpeg"
                                 required>
+<button class="replace-btn" type="submit">
+    Replace
+</button>
+</form>
+</td>
 
-                            <button class="replace-btn" type="submit">
-                                Replace
-                            </button>
-                    </form>
-                                        <td>
-                        {% set doc_shares = shares | selectattr("document_id", "equalto", doc["id"]) | list %}
+<td>
+    {% set doc_shares = shares | selectattr("document_id", "equalto", doc["id"]) | list %}
 
-                        {% if doc_shares %}
-                            {% for share in doc_shares %}
-                                <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                                    <strong>{{ share["shared_with"] }}</strong><br>
-                                    Permission: {{ share["permission"]|upper }}<br>
-                                    Shared Date: {{ share["granted_at"] }}<br>
+    {% if doc_shares %}
+        {% for share in doc_shares %}
+            <div style="margin-bottom: 12px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
 
-                                    <form method="POST"
-                                        action="{{ url_for('revoke_share', document_id=doc['id'], user_id=share['shared_user_id']) }}"
-                                        onsubmit="return confirm('Are you sure you want to revoke this user access?');">
+                <strong>{{ share["shared_with"] }}</strong><br>
 
-                                        <button type="submit"
-                                            style="background:#c0392b; color:white; padding:6px 10px; border:none; border-radius:4px; cursor:pointer;">
-                                            Revoke Access
-                                        </button>
-                                    </form>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <span>No shared users</span>
-                        {% endif %}
-                    </td>
-                {% else %}
-                <tr>
-                    <td colspan="8">No documents uploaded yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+                Permission: {{ share["permission"]|upper }}<br>
+                Shared Date: {{ share["granted_at"] }}<br><br>
+
+                <form method="POST"
+                    action="{{ url_for('set_viewer_password', user_id=share['shared_user_id']) }}">
+
+                    <input type="password"
+                        name="access_password"
+                        placeholder="New access password"
+                        minlength="8"
+                        required>
+
+                    <button type="submit" class="share-btn">
+                        Set / Change Password
+                    </button>
+                </form>
+
+                <br>
+
+                <form method="POST"
+                    action="{{ url_for('revoke_share', document_id=doc['id'], user_id=share['shared_user_id']) }}"
+                    onsubmit="return confirm('Are you sure you want to revoke access?');">
+
+                    <button type="submit"
+                        style="background:#c0392b; color:white; padding:6px 10px; border:none; border-radius:4px;">
+                        Revoke Access
+                    </button>
+                </form>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <span>No shared users</span>
+    {% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
