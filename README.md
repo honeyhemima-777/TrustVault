@@ -145,46 +145,55 @@ http://127.0.0.1:5002
 
 **Note:** These are demonstration credentials only. Change default passwords before production use. The viewer's additional access password is configured separately by the owner and should not be published.
 
-## 🧪 Test Cases
+## 🧪 Test Cases and Verification Status
 
-| Test ID | Test Scenario | Expected Result |
-|---|---|---|
-| TC01 | Admin login | Admin dashboard opens successfully. |
-| TC02 | Owner login | Owner dashboard opens successfully. |
-| TC03 | Viewer login | Viewer account opens successfully. |
-| TC04 | Upload a supported document | Document uploads successfully. |
-| TC05 | Upload an unsupported file | Upload is rejected. |
-| TC06 | Upload an empty file | Upload is rejected. |
-| TC07 | Share with READ permission | Viewer can download but cannot replace. |
-| TC08 | Share with EDIT permission | Viewer can replace the permitted document. |
-| TC09 | Set viewer access password | Password is stored as a hash. |
-| TC10 | Access shared documents without verification | Viewer is redirected to verification. |
-| TC11 | Enter incorrect access password | Access is denied. |
-| TC12 | Enter correct access password | Shared documents become accessible. |
-| TC13 | Revoke document access | Viewer loses access. |
-| TC14 | Unauthorized document replacement | HTTP 403 is returned. |
-| TC15 | Download an authorized document | Document downloads successfully. |
-| TC16 | Unauthorized audit log access | Access is denied. |
-| TC17 | Upload invalid PDF contents | Upload is rejected. |
-| TC18 | Upload a file exceeding 10 MB | Upload is rejected. |
-| TC19 | Access an invalid document ID | HTTP 404 is returned. |
-| TC20 | Review audit history | Recorded activities can be reviewed by an administrator. |
+The following table documents the intended test scenarios and their current verification status.
+
+| Test ID | Test Scenario | Expected Result | Status |
+|---|---|---|---|
+| TC01 | Admin login | Admin dashboard opens successfully | Verified |
+| TC02 | Owner login | Owner dashboard opens successfully | Verified |
+| TC03 | Viewer login | Viewer account opens successfully | Verified |
+| TC04 | Upload a supported document | Document uploads successfully | Verified |
+| TC05 | Upload an unsupported file | Upload is rejected | Implemented; further testing required |
+| TC06 | Upload an empty file | Upload is rejected | Implemented; further testing required |
+| TC07 | Share with READ permission | Viewer can download but cannot replace | READ replacement restriction verified; download policy requires further testing |
+| TC08 | Share with EDIT permission | Viewer can replace the permitted document | Verified |
+| TC09 | Set viewer access password | Password is stored as a hash | Implemented |
+| TC10 | Access shared documents without verification | Viewer is redirected to verification | Verified |
+| TC11 | Enter incorrect access password | Access is denied | Implemented; further negative testing required |
+| TC12 | Enter correct access password | Shared documents become accessible | Verified |
+| TC13 | Revoke document access | Viewer loses access | Implemented; complete negative testing pending |
+| TC14 | READ-only viewer attempts replacement | HTTP 403 is returned | Verified locally |
+| TC15 | Download an authorized document | Document downloads successfully | Verified |
+| TC16 | Unauthorized audit log access | Access is denied | Further testing required |
+| TC17 | Upload invalid PDF contents | Upload is rejected | Validation implemented; further testing required |
+| TC18 | Upload a file exceeding 10 MB | Upload is rejected | Validation implemented; further testing required |
+| TC19 | Access an invalid document ID | HTTP 404 is returned | Further testing required |
+| TC20 | Review audit history | Recorded activities can be reviewed by an administrator | Verified |
 
 ## 🔒 Security Testing
 
-The following security checks have been performed during development:
+The following checks were performed during development:
 
-- READ permission cannot replace a document.
-- EDIT permission allows authorized replacement.
-- Viewers cannot share another user's document.
-- Unauthorized users cannot access administrative audit logs.
-- Revoked users cannot download documents.
-- Unsupported file extensions are rejected.
-- Empty files are rejected.
-- Invalid PDF contents are rejected.
-- Files exceeding 10 MB are rejected.
-- Invalid document IDs return HTTP 404.
-- Document operations are recorded in the audit history.
+- Tested the login flows for Admin, Owner and Viewer.
+- Tested document upload and authorized download.
+- Tested document sharing and permission management.
+- Verified locally that a READ-only viewer attempting document replacement receives HTTP 403.
+- Tested document replacement with EDIT permission.
+- Tested the separate viewer access password verification flow.
+- Verified that document replacement activity appears in the administrator's audit history.
+- Tested document upload and download on the deployed Render application.
+
+### Additional Security Verification Required
+
+- Complete negative testing after document access is revoked.
+- Verify all unauthorized download and replacement scenarios.
+- Test unauthorized access to administrative audit history.
+- Test invalid document IDs and additional malformed upload cases.
+- Perform a complete security regression test on the deployed application.
+
+The verification status is documented honestly to distinguish implemented security controls from tests that still require additional evidence.
 
 ## 🎯 Project Objective
 
