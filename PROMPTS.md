@@ -3,122 +3,159 @@
 
 ### 1. Purpose
 
-AI was used as a development assistant during the creation of TrustVault. I directed the development process, reviewed generated suggestions, tested the implementation and corrected errors.
+AI was used as a development assistant while building TrustVault. I directed the requirements, reviewed suggested implementations, reported errors, tested application behavior and requested corrections.
 
-The following entries are reconstructed summaries of the prompts and development instructions used during the project. They are not claimed to be verbatim transcripts.
+This document is a reconstructed summary of the development interactions, not a verbatim transcript of every prompt.
 
-### 2. Prompt and Development History
+### 2. Development and Prompt History
 
-#### Entry 1 – 01 November 2026
-**Task:** Project planning and architecture
+#### Entry 1 – 06 November 2026
+**Task:** Initial application and secure document sharing
 
-**Prompt summary:**
-Help me build a secure document-sharing web application using Flask and SQLite. It should support Admin, Owner and Viewer roles, document uploads, sharing and permission management. Explain the implementation step by step.
+**What I asked AI:**
+Help me build a Flask and SQLite document-sharing application with Admin, Owner and Viewer roles, login, document uploads and secure sharing. Guide me through the implementation step by step.
 
-**My contribution:**
-I selected the project direction, clarified the requirements and requested a distinctive implementation rather than a generic template.
+**What AI produced:**
+An initial Flask application structure and document-sharing functionality.
 
-**Outcome:**
-Established the TrustVault architecture and initial application structure.
+**Issue identified during development:**
+The initial implementation needed to be checked against the actual role and permission requirements rather than assuming that a working interface meant secure access.
 
-#### Entry 2 – 02 November 2026
-**Task:** Authentication and role-based access
+**What I did:**
+I continued testing the application with different user roles and requested changes based on the actual behavior.
 
-**Prompt summary:**
-Help implement secure login using password hashing and Flask sessions. Admin, Owner and Viewer users should have different dashboard access. Prevent unauthorized users from accessing protected routes.
+**Commit:** [5ee90e7 – Add TrustVault secure document sharing application](https://github.com/honeyhemima-777/TrustVault/commit/5ee90e7)
 
-**My contribution:**
-I reviewed the role-based navigation and tested login behavior with different accounts.
+#### Entry 2 – 06 November 2026
+**Task:** Dashboard usability and document management
 
-**Outcome:**
-Implemented authentication, password hashing and role-based dashboards.
+**What I asked AI:**
+Improve the Owner Dashboard and make document management actions understandable and accessible.
 
-#### Entry 3 – 03 November 2026
-**Task:** Secure document uploads
+**What AI produced:**
+An improved dashboard interface with document management controls.
 
-**Prompt summary:**
-Implement document uploads with file type validation, file size restrictions and private storage. Do not trust the file extension alone; validate file contents too.
+**Issue identified during development:**
+The interface needed to clearly reflect document-sharing and management state. Displaying controls alone was not sufficient to establish that an operation had succeeded.
 
-**My contribution:**
-I tested valid and invalid uploads and checked whether document records were saved correctly.
+**What I did:**
+I checked the actual document records and tested the available actions through the application.
 
-**Outcome:**
-Implemented upload validation, a 10 MB limit and generated storage filenames.
+**Commit:** [b173e0e – Improve owner dashboard UI and update README](https://github.com/honeyhemima-777/TrustVault/commit/b173e0e)
 
-#### Entry 4 – 04 November 2026
-**Task:** Document sharing and authorization
+#### Entry 3 – 06 November 2026
+**Task:** Debugging document download and shared-document display
 
-**Prompt summary:**
-Implement document sharing with READ and EDIT permissions. Ensure that a READ-only viewer cannot replace a document, even if they manually submit a request to the replacement URL.
+**What I asked AI:**
+Investigate the HTTP 500 error encountered during document download and help resolve the issue where a shared document existed in the server-side debug output but was not appearing correctly on the viewer page.
 
-**My contribution:**
-I tested authorization at the route level instead of relying only on hiding buttons in the interface.
+**What AI produced:**
+Debugging guidance and corrections to the affected application code.
 
-**Outcome:**
-Implemented server-side permission checks. A local security test confirmed that a READ user attempting replacement was blocked with HTTP 403.
+**Issue identified during development:**
+The download route contained an accidental SQL/code syntax error. The shared-document display also did not initially match the data returned by the server.
 
-#### Entry 5 – 05 November 2026
-**Task:** Audit trail
+**What I did:**
+I reported the observed errors, checked terminal output and debug information, applied corrections and tested the affected functionality again.
 
-**Prompt summary:**
-Help implement an audit log that records important TrustVault activities, including login attempts, document downloads, sharing, revocation and document replacement.
+**Commit reference:** [5ee90e7 – Secure document-sharing application](https://github.com/honeyhemima-777/TrustVault/commit/5ee90e7)
 
-**My contribution:**
-I checked the audit history through the Admin dashboard and verified that document replacement activity appeared.
+#### Entry 4 – 07 November 2026
+**Task:** Authorization and permission enforcement
 
-**Outcome:**
-Implemented audit logging and an admin-only audit history page.
+**What I asked AI:**
+Implement READ and EDIT document permissions. A READ-only viewer must not be able to replace a document by directly submitting a request to the replacement route.
 
-#### Entry 6 – 06 November 2026
-**Task:** Additional viewer password protection
+**What AI produced:**
+Server-side permission checks for document operations.
 
-**Prompt summary:**
-Add a separate access password for each viewer. Store password hashes rather than plaintext passwords and require verification before accessing shared documents.
+**Security consideration:**
+Hiding the Replace button in the interface would not be sufficient. The server must independently verify the user's permission.
 
-**My contribution:**
-I tested the owner password-setting workflow, viewer verification and access to shared documents. I checked database records without exposing stored password hashes.
+**What I did:**
+I tested a replacement request as a READ-only viewer. The local security test returned HTTP 403, confirming that the tested unauthorized replacement was blocked.
 
-**Outcome:**
-Implemented separate viewer access password protection.
+**Commit reference:** [5ee90e7 – Secure document-sharing application](https://github.com/honeyhemima-777/TrustVault/commit/5ee90e7)
+
+#### Entry 5 – 07 November 2026
+**Task:** Audit trail and accountability
+
+**What I asked AI:**
+Help implement audit logging for important activities such as login attempts, document downloads, sharing, revocation and document replacement.
+
+**What AI produced:**
+Database-backed audit records and an Admin audit history page.
+
+**Security consideration:**
+A success message alone does not provide an audit trail. Important actions need recorded events that can be inspected later.
+
+**What I did:**
+I opened the Admin Audit Logs page and verified that a document replacement event appeared after the operation.
+
+**Commit reference:** [5ee90e7 – Secure document-sharing application](https://github.com/honeyhemima-777/TrustVault/commit/5ee90e7)
+
+#### Entry 6 – 07 November 2026
+**Task:** Separate viewer access password protection
+
+**What I asked AI:**
+Add an additional password for each viewer. Store the password as a hash and require verification before the viewer accesses shared documents.
+
+**What AI produced:**
+A viewer access-password management workflow, password verification and session-based verification checks.
+
+**Security consideration:**
+Normal account login alone was not the additional document-access protection requested. The separate viewer verification needed to be enforced before protected document operations.
+
+**What I did:**
+I tested the owner password-setting workflow, signed in as the viewer, completed the separate password verification and accessed the shared document. I also tested document replacement with EDIT permission.
+
+**Commit:** [97b02f2 – Add separate viewer access password protection](https://github.com/honeyhemima-777/TrustVault/commit/97b02f2)
 
 #### Entry 7 – 07 November 2026
-**Task:** Deployment and final verification
+**Task:** Deployment and production debugging
 
-**Prompt summary:**
-Help deploy the Flask application on Render, resolve deployment and database initialization issues, and verify the latest GitHub commit.
+**What I asked AI:**
+Help deploy the Flask application on Render and investigate database initialization problems during deployment.
 
-**My contribution:**
-I checked the Render deployment history, tested the live login, uploaded a document and successfully downloaded it.
+**What AI produced:**
+Deployment configuration guidance, Gunicorn setup and database initialization corrections.
 
-**Outcome:**
-Deployed TrustVault and updated the Snovasys submission with the latest website and GitHub links.
+**Issue identified during development:**
+The deployed environment required database initialization to work correctly, independently of the local development environment.
+
+**What I did:**
+I reported the deployment issue, applied the correction, checked the Render deployment history and tested the live application. I verified owner login, document upload, document listing and document download.
+
+**Commits:**
+- [a9437c2 – Add Gunicorn for Render deployment](https://github.com/honeyhemima-777/TrustVault/commit/a9437c2)
+- [3aca5f6 – Fix database initialization for Render deployment](https://github.com/honeyhemima-777/TrustVault/commit/3aca5f6)
 
 ### 3. How I Evaluated AI Suggestions
 
-I did not blindly accept generated code. I:
+During development, I:
 
-- Reviewed suggested code before adding it.
+- Reviewed generated code before using it.
 - Ran Python syntax checks.
-- Tested application routes using different user roles.
-- Investigated database and deployment errors.
-- Corrected issues when the actual application behavior differed from expectations.
-- Tested unauthorized document replacement and confirmed that the server blocked the request.
-- Verified the deployed application through the live website.
+- Tested login and document operations.
+- Reported unexpected HTTP errors.
+- Used terminal output and debug information to investigate problems.
+- Tested authorization using different user roles.
+- Checked the Admin audit history.
+- Verified important functionality on the deployed website.
 
-### 4. Limitations and Lessons Learned
+### 4. Lessons Learned
 
-AI-generated code can contain incorrect assumptions, implementation mistakes or incomplete security checks.
+The development process taught me that:
 
-During development, I learned to:
-
-- Verify authorization on the server side.
-- Test both permitted and denied actions.
-- Inspect database records when behavior is unexpected.
-- Avoid treating a successful deployment as proof that every security requirement has passed.
-- Review and improve generated code based on actual test results.
+- A visible button does not prove server-side authorization.
+- Authentication and authorization are different security responsibilities.
+- File validation must inspect content, not just filenames.
+- Debug output and database inspection help identify application problems.
+- Local testing and production deployment can expose different issues.
+- AI-generated code must be reviewed and tested before it is trusted.
 
 ### 5. Conclusion
 
-AI supported the development process, but project direction, requirement clarification, code review, testing and final verification were part of my own development work.
+AI assisted with planning, implementation, debugging and documentation. I directed the requirements, reported observed problems, tested the application and reviewed the results.
 
-TrustVault demonstrates the use of AI as a development assistant combined with independent testing and security-focused decision-making.
+TrustVault demonstrates how AI can support individual software development while keeping human review, security testing and responsibility central to the process.
